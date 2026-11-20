@@ -7,6 +7,16 @@ import datetime as dt, glob, json, os, sys, urllib.parse, urllib.request
 TOKEN, CHAT = os.environ.get("TG_BOT_TOKEN", ""), os.environ.get("TG_CHAT", "@neforyou_tw")
 now = dt.datetime.now(dt.timezone.utc)
 os.makedirs("tg/sent", exist_ok=True); os.makedirs("tg/errors", exist_ok=True)
+LOG = []
+def log(*a):
+    LOG.append(" ".join(str(x) for x in a)); print(*a)
+def save_log():
+    if LOG:
+        open("tg/last_run.log", "w", encoding="utf-8").write("\n".join(LOG) + "\n")
+import atexit; atexit.register(save_log)
+queued = sorted(glob.glob("tg/queue/*.json"))
+if queued:
+    log(now.isoformat(), "token present:", bool(TOKEN), "chat:", CHAT, "queued:", [os.path.basename(q) for q in queued])
 if not TOKEN:
     open("tg/errors/no_token.txt", "w").write(f"{now.isoformat()} TG_BOT_TOKEN secret is missing\n"); sys.exit(0)
 elif os.path.exists("tg/errors/no_token.txt"):
@@ -26,6 +36,7 @@ for path in sorted(glob.glob("tg/queue/*.json")):
     if when.tzinfo is None:
         when = when.replace(tzinfo=dt.timezone(dt.timedelta(hours=3)))
     if when > now + dt.timedelta(seconds=60):
+        log("not due yet", os.path.basename(path), when.isoformat())
         continue
     t, pm = it.get("type", "message"), it.get("parse_mode")
     if t == "photo":
@@ -46,7 +57,7 @@ for path in sorted(glob.glob("tg/queue/*.json")):
         os.remove(path)
         err = f"tg/errors/{name}.txt"
         if os.path.exists(err): os.remove(err)
-        print("posted", name, res["result"]["message_id"])
+        log("posted", name, res["result"]["message_id"])
     else:
         open(f"tg/errors/{name}.txt", "w").write(f"{now.isoformat()} {res.get('description')}\n")
-        print("FAILED", name, res.get("description"))
+        log("FAILED", name, res.get("description"))
