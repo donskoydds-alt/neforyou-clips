@@ -1,2 +1,3 @@
-2026-11-20T09:47:37.196995+00:00 token present: True chat: @neforyou_tw queued: ['2026-11-20_1230_announce.json']
-posted 2026-11-20_1230_announce.json 2904
+2026-11-20T09:50:32.407659+00:00 token present: True chat: @neforyou_tw queued: ['2026-11-20_1530_clip_lodka.json', '2026-11-20_1700_poll.json']
+not due yet 2026-11-20_1530_clip_lodka.json 2026-11-20T15:30:00+03:00
+not due yet 2026-11-20_1700_poll.json 2026-11-20T17:00:00+03:00
