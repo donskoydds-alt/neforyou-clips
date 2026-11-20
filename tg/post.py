@@ -10,8 +10,9 @@ os.makedirs("tg/sent", exist_ok=True); os.makedirs("tg/errors", exist_ok=True)
 LOG = []
 def log(*a):
     LOG.append(" ".join(str(x) for x in a)); print(*a)
+ACTED = []
 def save_log():
-    if LOG:
+    if LOG and ACTED:
         open("tg/last_run.log", "w", encoding="utf-8").write("\n".join(LOG) + "\n")
 import atexit; atexit.register(save_log)
 queued = sorted(glob.glob("tg/queue/*.json"))
@@ -38,6 +39,7 @@ for path in sorted(glob.glob("tg/queue/*.json")):
     if when > now + dt.timedelta(seconds=60):
         log("not due yet", os.path.basename(path), when.isoformat())
         continue
+    ACTED.append(path)
     t, pm = it.get("type", "message"), it.get("parse_mode")
     if t == "photo":
         res = api("sendPhoto", {"chat_id": CHAT, "photo": it["photo"], "caption": it.get("text"), "parse_mode": pm})
