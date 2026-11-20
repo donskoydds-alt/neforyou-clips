@@ -1,0 +1,33 @@
+name: tg-post
+on:
+  push:
+    branches: [main]
+    paths: ['tg/queue/**']
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: tg-post
+  cancel-in-progress: false
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Sync to latest main (avoid double posts)
+        run: git fetch origin main && git reset --hard origin/main
+      - name: Post due items to Telegram
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT: '@neforyou_tw'
+        run: python3 tg/post.py
+      - name: Save results
+        run: |
+          git config user.name "neforyou-tg-bot"
+          git config user.email "noreply@users.noreply.github.com"
+          git add -A tg
+          git diff --cached --quiet || (git commit -q -m "tg: posted [skip ci]" && git push -q origin HEAD:main)
